@@ -1,0 +1,47 @@
+name: Android APK Oluştur
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+
+      - name: Java kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Node kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Android SDK kur
+        uses: android-actions/setup-android@v3
+
+      - name: Projeyi çıkar
+        run: |
+          unzip -q github-build-kit.zip -d kit
+          unzip -q kit/github-build-kit/my-app-source-fixed.zip -d extracted
+
+      - name: Paketleri yükle
+        working-directory: extracted/my-app-patched
+        run: npm ci
+
+      - name: APK oluştur
+        working-directory: extracted/my-app-patched/android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: APK kaydet
+        uses: actions/upload-artifact@v4
+        with:
+          name: Beynini-Kitle-APK
+          path: extracted/my-app-patched/android/app/build/outputs/apk/debug/app-debug.apkç
